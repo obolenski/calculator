@@ -1,27 +1,26 @@
-import type { Component } from 'solid-js';
+import type { Component } from 'solid-js'
 
-import logo from './logo.svg';
-import styles from './App.module.css';
+import { ThemeProvider, createTheme } from '@suid/material/styles'
+
+import OhmsLaw from './pages/OhmsLaw/OhmsLaw'
+import Header from './components/Header'
+import styles from './App.module.css'
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+})
 
 const App: Component = () => {
   return (
-    <div class={styles.App}>
-      <header class={styles.header}>
-        <img src={logo} class={styles.logo} alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          class={styles.link}
-          href="https://github.com/solidjs/solid"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn Solid
-        </a>
-      </header>
-    </div>
-  );
-};
+    <ThemeProvider theme={darkTheme}>
+      <div class={styles.App}>
+        <Header />
+        <OhmsLaw />
+      </div>
+    </ThemeProvider>
+  )
+}
 
-export default App;
+export default App
