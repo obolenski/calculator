@@ -1,24 +1,12 @@
 .App {
   text-align: center;
+  min-height: 100vh;
 }
 
 .logo {
   animation: logo-spin infinite 20s linear;
   height: 40vmin;
   pointer-events: none;
-}
-
-.header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 5vh;
-  background-color: #181818;
-  color: whitesmoke;
-}
-
-.link {
-  color: #b318f0;
 }
 
 @keyframes logo-spin {
