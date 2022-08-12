@@ -14,7 +14,7 @@ const routes = [
   },
   {
     path: '**',
-    component: lazy(() => import('../pages/NotFound')),
+    component: lazy(() => import('../pages/404')),
     linkText: '',
     excludeFromNav: true,
   },
