@@ -1,22 +1,39 @@
 import TextField from '@suid/material/TextField'
 import Button from '@suid/material/Button'
-import Divider from '@suid/material/Divider'
 
-import styles from './styles.module.css'
-import { Component, createSignal, JSX } from 'solid-js'
+import { Component, createEffect, createSignal, JSX } from 'solid-js'
 import { evaluate } from 'mathjs'
-import OhmsLawChart from '../../components/ohmsLawChart'
+
+import Page from '../../components/Page'
 
 const [voltage, setVoltage] = createSignal('')
 const [current, setCurrent] = createSignal('')
 const [resistance, setResistance] = createSignal('')
 const [power, setPower] = createSignal('')
+const [wireSize, setWireSize] = createSignal('')
 const [lastEditedFields, setLastEditedFields] = createSignal(['', ''])
 const [activeField, setActiveField] = createSignal('')
 
-const ohmsLaw: Component = () => {
+const OhmsLaw: Component = () => {
   const removeNonNumeric = (value: string) => {
     return value.replace(/[^0-9]/g, '')
+  }
+
+  createEffect(() => {
+    setWireSize(getWireSize(current()))
+  })
+
+  const getWireSize = (current: string) => {
+    const num = parseInt(current)
+    if (!num) return ''
+    if (num <= 11) return '0.5'
+    if (num <= 15) return '0.75'
+    if (num <= 17) return '1.00'
+    if (num <= 23) return '1.50'
+    if (num <= 26) return '2.00'
+    if (num <= 30) return '2.50'
+    if (num <= 41) return '4.00'
+    return 'needs big wire'
   }
 
   const onReset = () => {
@@ -29,14 +46,12 @@ const ohmsLaw: Component = () => {
   const onFocus: any = (e: InputEvent) => {
     const target = e.currentTarget as HTMLInputElement
     setActiveField(target.id)
-    console.log('active field: ' + activeField())
   }
 
   const addTargetToLastEditedValues: any = (e: InputEvent) => {
     const target = e.currentTarget as HTMLInputElement
 
     if (lastEditedFields().includes(target.id)) {
-      console.log(lastEditedFields())
       return
     }
 
@@ -141,60 +156,74 @@ const ohmsLaw: Component = () => {
     }
   }
 
+  const leftSectionElements = () => {
+    return [
+      <TextField
+        disabled
+        id="wireSize"
+        label="Wire cross section"
+        helperText="mm2"
+        value={wireSize()}
+        defaultValue=""
+      />,
+      <Button variant="outlined" onClick={onReset} size="small" color="error">
+        Reset
+      </Button>,
+    ]
+  }
+
+  const centerSectionElements = () => {
+    return [
+      <TextField
+        id="voltage"
+        label="V"
+        helperText="Volts"
+        onChange={onChange}
+        onFocus={onFocus}
+        value={voltage().toString()}
+      />,
+      <TextField
+        id="current"
+        label="I"
+        helperText="Amps"
+        onChange={onChange}
+        onFocus={onFocus}
+        value={current().toString()}
+      />,
+      <TextField
+        id="resistance"
+        label="R"
+        helperText="Ohms"
+        onChange={onChange}
+        onFocus={onFocus}
+        value={resistance().toString()}
+      />,
+      <TextField
+        id="power"
+        label="P"
+        helperText="Watts"
+        onChange={onChange}
+        onFocus={onFocus}
+        value={power().toString()}
+      />,
+    ]
+  }
+
+  const rightSectionElements = () => {
+    const formulas = ['V = I x R', 'I = V ÷ R', 'R = V ÷ I', 'P = V x I']
+    const formulasJSX: JSX.Element[] = formulas.map((formula) => (
+      <div>{formula}</div>
+    ))
+    return formulasJSX
+  }
+
   return (
-    <div class={styles.page}>
-      <div class={styles.notes}>
-        <TextField
-          disabled
-          id="wireSize"
-          label="Wire cross section"
-          defaultValue=""
-        />
-        <Button variant="outlined" onClick={onReset} size="small" color="error">
-          Reset
-        </Button>
-      </div>
-      <Divider orientation="vertical" flexItem />
-      <div class={styles.form}>
-        <TextField
-          id="voltage"
-          label="V"
-          helperText="Volts"
-          onChange={onChange}
-          onFocus={onFocus}
-          value={voltage().toString()}
-        />
-        <TextField
-          id="current"
-          label="I"
-          helperText="Amps"
-          onChange={onChange}
-          onFocus={onFocus}
-          value={current().toString()}
-        />
-        <TextField
-          id="resistance"
-          label="R"
-          helperText="Ohms"
-          onChange={onChange}
-          onFocus={onFocus}
-          value={resistance().toString()}
-        />
-        <TextField
-          id="power"
-          label="P"
-          helperText="Watts"
-          onChange={onChange}
-          onFocus={onFocus}
-          value={power().toString()}
-        />
-      </div>
-      <Divider orientation="vertical" flexItem />
-      <div class={styles.illustration}>
-        <OhmsLawChart />
-      </div>
-    </div>
+    <Page
+      leftSectionElements={leftSectionElements()}
+      centerSectionElements={centerSectionElements()}
+      rightSectionElements={rightSectionElements()}
+    />
   )
 }
 
-export default ohmsLaw
+export default OhmsLaw
