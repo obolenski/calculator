@@ -2,45 +2,48 @@ import TextField from '@suid/material/TextField'
 import Button from '@suid/material/Button'
 
 import { Component, createEffect, createSignal, JSX } from 'solid-js'
-import { evaluate } from 'mathjs'
 
 import Page from '../../components/Page'
 
-const [voltage, setVoltage] = createSignal('')
-const [current, setCurrent] = createSignal('')
-const [resistance, setResistance] = createSignal('')
-const [power, setPower] = createSignal('')
+const [voltage, setVoltage] = createSignal(0)
+const [current, setCurrent] = createSignal(0)
+const [resistance, setResistance] = createSignal(0)
+const [power, setPower] = createSignal(0)
 const [wireSize, setWireSize] = createSignal('')
 const [lastEditedFields, setLastEditedFields] = createSignal(['', ''])
 const [activeField, setActiveField] = createSignal('')
 
 const OhmsLaw: Component = () => {
-  const removeNonNumeric = (value: string) => {
-    return value.replace(/[^0-9]/g, '')
+  const numerify = (value: string): number => {
+    return parseInt(value.replace(/[^0-9]/g, ''))
   }
 
   createEffect(() => {
     setWireSize(getWireSize(current()))
   })
 
-  const getWireSize = (current: string) => {
-    const num = parseInt(current)
-    if (!num) return ''
-    if (num <= 11) return '0.5'
-    if (num <= 15) return '0.75'
-    if (num <= 17) return '1.00'
-    if (num <= 23) return '1.50'
-    if (num <= 26) return '2.00'
-    if (num <= 30) return '2.50'
-    if (num <= 41) return '4.00'
+  const getWireSize = (current: number) => {
+    if (!current) return ''
+    if (current <= 11) return '0.5'
+    if (current <= 15) return '0.75'
+    if (current <= 17) return '1.00'
+    if (current <= 23) return '1.50'
+    if (current <= 26) return '2.00'
+    if (current <= 30) return '2.50'
+    if (current <= 41) return '4.00'
     return 'needs big wire'
   }
 
+  const getFieldValue = (num: number): string => {
+    if (num == 0) return ''
+    else return num.toString()
+  }
+
   const onReset = () => {
-    setVoltage('')
-    setCurrent('')
-    setResistance('')
-    setPower('')
+    setVoltage(0)
+    setCurrent(0)
+    setResistance(0)
+    setPower(0)
   }
 
   const onFocus: any = (e: InputEvent) => {
@@ -48,15 +51,13 @@ const OhmsLaw: Component = () => {
     setActiveField(target.id)
   }
 
-  const addTargetToLastEditedValues: any = (e: InputEvent) => {
-    const target = e.currentTarget as HTMLInputElement
-
-    if (lastEditedFields().includes(target.id)) {
+  const addToLastEditedFields: any = (id: string) => {
+    if (lastEditedFields().includes(id)) {
       return
     }
 
     let newActiveInputs = lastEditedFields()
-    newActiveInputs.push(target.id)
+    newActiveInputs.push(id)
 
     setLastEditedFields(newActiveInputs.slice(-2))
 
@@ -65,22 +66,22 @@ const OhmsLaw: Component = () => {
 
   const onChange: any = (e: InputEvent) => {
     const target = e.currentTarget as HTMLInputElement
-    const valueNumsOnly = removeNonNumeric(target.value)
+    const newValue = numerify(target.value)
 
-    addTargetToLastEditedValues(e)
+    addToLastEditedFields(target.id)
 
     switch (target.id) {
       case 'voltage':
-        setVoltage(valueNumsOnly)
+        setVoltage(newValue)
         break
       case 'current':
-        setCurrent(valueNumsOnly)
+        setCurrent(newValue)
         break
       case 'resistance':
-        setResistance(valueNumsOnly)
+        setResistance(newValue)
         break
       case 'power':
-        setPower(valueNumsOnly)
+        setPower(newValue)
         break
       default:
         console.log('no handler registered for field')
@@ -134,25 +135,25 @@ const OhmsLaw: Component = () => {
 
   const calcResistance = () => {
     if (voltage() && current() && activeField() != 'resistance') {
-      setResistance(evaluate(`${voltage()} / ${current()}`))
+      setResistance(voltage() / current())
     }
   }
 
   const calcPower = () => {
     if (voltage() && current() && activeField() != 'power') {
-      setPower(evaluate(`${voltage()} * ${current()}`))
+      setPower(voltage() * current())
     }
   }
 
   const calcCurrent = () => {
     if (voltage() && power() && activeField() != 'current') {
-      setCurrent(evaluate(`${power()} / ${voltage()}`))
+      setCurrent(power() / voltage())
     }
   }
 
   const calcVoltage = () => {
     if (resistance() && current() && activeField() != 'voltage') {
-      setVoltage(evaluate(`${resistance()} * ${current()}`))
+      setVoltage(resistance() * current())
     }
   }
 
@@ -180,7 +181,7 @@ const OhmsLaw: Component = () => {
         helperText="Volts"
         onChange={onChange}
         onFocus={onFocus}
-        value={voltage().toString()}
+        value={getFieldValue(voltage())}
       />,
       <TextField
         id="current"
@@ -188,7 +189,7 @@ const OhmsLaw: Component = () => {
         helperText="Amps"
         onChange={onChange}
         onFocus={onFocus}
-        value={current().toString()}
+        value={getFieldValue(current())}
       />,
       <TextField
         id="resistance"
@@ -196,7 +197,7 @@ const OhmsLaw: Component = () => {
         helperText="Ohms"
         onChange={onChange}
         onFocus={onFocus}
-        value={resistance().toString()}
+        value={getFieldValue(resistance())}
       />,
       <TextField
         id="power"
@@ -204,7 +205,7 @@ const OhmsLaw: Component = () => {
         helperText="Watts"
         onChange={onChange}
         onFocus={onFocus}
-        value={power().toString()}
+        value={getFieldValue(power())}
       />,
     ]
   }
