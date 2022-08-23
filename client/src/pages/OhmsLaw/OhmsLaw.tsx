@@ -35,7 +35,7 @@ const OhmsLaw: Component = () => {
   }
 
   const getFieldValue = (num: number): string => {
-    if (num == 0) return ''
+    if (num == 0 || num == NaN) return ''
     else return num.toString()
   }
 
